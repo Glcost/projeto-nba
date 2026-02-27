@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NBA Elite - Results</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,700;1,800&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: white;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #262626;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body class="flex h-screen overflow-hidden">
+
+    <aside class="w-64 border-r border-neutral-800 flex flex-col p-6 gap-8 bg-[#0a0a0a]">
+        <div class="flex items-center gap-3 text-blue-500 font-bold text-xl tracking-tighter">
+            <div class="bg-blue-600/10 p-2 rounded-lg border border-blue-500/20">
+                <i data-lucide="trophy" class="w-6 h-6"></i>
+            </div>
+            <span>NBA<span class="text-white uppercase">Elite</span></span>
+        </div>
+        <nav class="space-y-2">
+            <a href="/"
+                class="flex items-center gap-3 p-3 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded-xl transition-all">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+            </a>
+            <a href="/results"
+                class="flex items-center gap-3 p-3 bg-blue-600 rounded-xl text-white font-medium transition-all">
+                <i data-lucide="calendar" class="w-5 h-5"></i> Results
+            </a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-hidden">
+
+        <header
+            class="p-6 border-b border-neutral-800 flex justify-between items-center bg-[#050505]/80 backdrop-blur-md">
+            <h2 class="text-xl font-bold italic uppercase tracking-widest">Latest Game Results</h2>
+            <form method="POST">
+                <button type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Atualizar Resultados
+                </button>
+            </form>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 bg-[#050505]">
+
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                {% if jogos %}
+                {% for jogo in jogos %}
+                <div
+                    class="bg-neutral-900/40 border border-neutral-800 rounded-3xl p-6 hover:border-neutral-600 transition-all">
+                    <div class="flex justify-between items-center mb-6">
+                        <span
+                            class="text-[10px] font-black bg-neutral-800 px-3 py-1 rounded-full text-neutral-400 uppercase tracking-widest">
+                            {{ jogo.get('date', 'N/A')[:10] }}
+                        </span>
+                        <div class="text-[10px] font-bold text-green-500 uppercase">Final Score</div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex flex-col items-center gap-3 flex-1">
+                            <img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nba/500/{{ jogo.get('homeTeam', '').lower() }}.png"
+                                class="w-16 h-16 object-contain rounded-2xl"
+                                onerror="this.src='https://ui-avatars.com/api/?name={{ jogo.homeTeam }}'">
+                            <span class="font-black text-lg italic uppercase">{{ jogo.get('homeTeam') }}</span>
+                        </div>
+
+                        <div class="flex flex-col items-center px-4">
+                            <div class="text-5xl font-black tracking-tighter flex items-center gap-4">
+                                <span
+                                    class="{% if jogo.get('homePts', 0) > jogo.get('visitorPts', 0) %}text-white{% else %}text-neutral-600{% endif %}">
+                                    {{ jogo.get('homePts', 0) }}
+                                </span>
+                                <span class="text-neutral-800 text-2xl">-</span>
+                                <span
+                                    class="{% if jogo.get('visitorPts', 0) > jogo.get('homePts', 0) %}text-white{% else %}text-neutral-600{% endif %}">
+                                    {{ jogo.get('visitorPts', 0) }}
+                                </span>
+                            </div>
+                            <div class="mt-4 px-4 py-1 bg-white/5 rounded-full border border-white/10">
+                                <span class="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">Regular
+                                    Season</span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col items-center gap-3 flex-1">
+                            <img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nba/500/{{ jogo.get('visitorTeam', '').lower() }}.png"
+                                class="w-16 h-16 object-contain rounded-2xl"
+                                onerror="this.src='https://ui-avatars.com/api/?name={{ jogo.visitorTeam }}'">
+                            <span class="font-black text-lg italic uppercase">{{ jogo.get('visitorTeam') }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="col-span-full py-20 text-center border-2 border-dashed border-neutral-800 rounded-3xl">
+                    <i data-lucide="search" class="w-12 h-12 text-neutral-700 mx-auto mb-4"></i>
+                    <p class="text-neutral-500 font-bold uppercase tracking-widest text-sm">Clique em "Atualizar
+                        Resultados" para buscar dados da API</p>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </main>
+
+    <script>lucide.createIcons();</script>
+</body>
+
+</html>
