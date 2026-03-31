@@ -7,4 +7,4 @@
     msg.style.transition = 'opacity 0.5s ease';
             setTimeout(() => msg.remove(), 500);
         });
-    }, 2000);
+    }, 5000);

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NBA Elite - Player Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,700;1,800&display=swap"
+        rel="stylesheet">
+    <link rel="shortcut icon" href="../static/img/logo.jpg" type="image/x-icon">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: white;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: #3b82f6;
+        }
+
+        .player-glow {
+            filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.3));
+        }
+    </style>
+</head>
+
+<body class="flex h-screen overflow-hidden">
+
+    <aside class="w-64 border-r border-neutral-800 flex flex-col p-6 gap-8 bg-[#0a0a0a]">
+        <div class="flex items-center gap-3 text-blue-500 font-bold text-xl tracking-tighter">
+            <div class="bg-blue-600/10 p-2 rounded-lg border border-blue-500/20">
+                <i data-lucide="activity" class="w-6 h-6"></i>
+            </div>
+            <span>NBA<span class="text-white uppercase">Elite</span></span>
+        </div>
+        <nav class="space-y-2">
+            <a href="/"
+                class="flex items-center gap-3 p-3 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded-xl transition-all">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+            </a>
+            <a href="/results"
+                class="flex items-center gap-3 p-3 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded-xl transition-all">
+                <i data-lucide="calendar" class="w-5 h-5"></i> Games
+            </a>
+            <a href="/playerstats"
+                class="flex items-center gap-3 p-3 bg-blue-600 rounded-xl text-white font-medium shadow-lg shadow-blue-900/20">
+                <i data-lucide="bar-chart-3" class="w-5 h-5"></i> Advanced Stats
+            </a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-hidden">
+        <header class="p-8 border-b border-neutral-800 bg-[#050505]/50">
+            <form action="/playerstats" method="POST" class="flex flex-wrap items-end gap-4">
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-[10px] font-black uppercase text-neutral-500 ml-1">Season</label>
+                    <input type="text" name="season" placeholder="2024" maxlength="4" value="{{ season or '' }}"
+                        class="bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-2 text-sm focus:border-blue-500 outline-none w-28">
+                </div>
+
+                <div class="flex flex-col gap-1.5 flex-1 min-w-[200px]">
+                    <label class="text-[10px] font-black uppercase text-neutral-500 ml-1">Player Name</label>
+                    <input type="text" name="playerName" placeholder="Ex: Kevin Durant..."
+                        value="{{ player_name or '' }}"
+                        class="bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-2 text-sm focus:border-blue-500 outline-none w-full">
+                </div>
+                <button type="submit"
+                    class="bg-white text-black font-black px-8 py-2 rounded-xl text-xs uppercase hover:bg-blue-500 hover:text-white transition-all h-[38px]">
+                    Analyze
+                </button>
+            </form>
+        </header>
+
+        <div
+            class="flex-1 overflow-y-auto p-8 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent">
+
+            {% if estatisticas %}
+            <div class="mb-10 flex flex-col md:flex-row items-center md:items-end gap-8">
+                <div class="relative group">
+                    <div
+                        class="absolute -inset-1 bg-blue-600 rounded-full blur opacity-20 group-hover:opacity-40 transition">
+                    </div>
+                    <img src="{{ estatisticas[0].photo_url }}" alt="{{ estatisticas[0].playerName }}"
+                        class="relative w-44 h-44 object-cover rounded-full border-4 border-neutral-800 bg-neutral-900 player-glow"
+                        onerror="this.src='https://cdn.nba.com/headshots/nba/latest/1040x760/fallback.png'">
+                </div>
+
+                <div class="flex-1 text-center md:text-left">
+                    <div class="flex items-center justify-center md:justify-start gap-3 mb-2">
+                        <span class="bg-blue-500 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase">
+                            {{ estatisticas[0].get('position', 'N/A') }}
+                        </span>
+                        <span class="text-neutral-500 font-bold text-sm tracking-widest uppercase">
+                            {{ estatisticas[0].get('team', 'NBA') }} • Age {{ estatisticas[0].get('age', '--') }}
+                        </span>
+                    </div>
+                    <h1 class="text-6xl font-black italic uppercase tracking-tighter leading-none">
+                        {{ estatisticas[0].playerName.split(' ')[0] }}<br>
+                        <span class="text-blue-500">{{ estatisticas[0].playerName.split(' ')[1:] | join(' ') }}</span>
+                    </h1>
+                </div>
+
+                <div class="flex gap-8 border-l border-neutral-800 pl-8">
+                    <div>
+                        <p class="text-neutral-500 text-[10px] font-black uppercase tracking-widest">PPG</p>
+                        <p class="text-4xl font-black italic">{{ estatisticas[0].ppg }}</p>
+                    </div>
+                    <div>
+                        <p class="text-neutral-500 text-[10px] font-black uppercase tracking-widest">Points</p>
+                        <p class="text-4xl font-black italic">{{ estatisticas[0].points }}</p>
+                    </div>
+                    <div>
+                        <p class="text-neutral-500 text-[10px] font-black uppercase tracking-widest">Assists</p>
+                        <p class="text-4xl font-black italic">{{ estatisticas[0].assists }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="stat-card glass p-6 rounded-[2rem] col-span-1 lg:col-span-2">
+                    <h3 class="text-xs font-black uppercase text-neutral-400 mb-6 flex items-center gap-2">
+                        <i data-lucide="zap" class="w-4 h-4 text-yellow-500"></i> Shooting Efficiency
+                    </h3>
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-[10px] font-bold uppercase">Field Goal (FG%)</span>
+                                <span class="text-green-500 font-black">{{ estatisticas[0].fg_pct }}%</span>
+                            </div>
+                            <div class="h-2 w-full bg-neutral-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-green-500" style="width: {{ estatisticas[0].fg_pct }}%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-[10px] font-bold uppercase">3-Point (3P%)</span>
+                                <span class="text-blue-500 font-black">{{ estatisticas[0].tp_pct }}%</span>
+                            </div>
+                            <div class="h-2 w-full bg-neutral-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-blue-500" style="width: {{ estatisticas[0].tp_pct }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card glass p-6 rounded-[2rem]">
+                    <h3 class="text-xs font-black uppercase text-neutral-400 mb-6 flex items-center gap-2">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-blue-400"></i> Defense
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-neutral-500 text-xs font-bold uppercase">Steals</span>
+                            <span class="text-xl font-black italic">{{ estatisticas[0].steals }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-neutral-500 text-xs font-bold uppercase">Blocks</span>
+                            <span class="text-xl font-black italic">{{ estatisticas[0].blocks }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-neutral-500 text-xs font-bold uppercase">Rebounds</span>
+                            <span class="text-xl font-black italic">{{ estatisticas[0].totalRb }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card glass p-6 rounded-[2rem]">
+                    <h3 class="text-xs font-black uppercase text-neutral-400 mb-6 flex items-center gap-2">
+                        <i data-lucide="clock" class="w-4 h-4 text-neutral-400"></i> Usage
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-neutral-500 text-xs font-bold uppercase">Games</span>
+                            <span class="text-xl font-black italic">{{ estatisticas[0].games }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-neutral-500 text-xs font-bold uppercase">Minutes/G</span>
+                            <span class="text-xl font-black italic">{{ estatisticas[0].minutesPg }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-neutral-500 text-xs font-bold uppercase">Turnovers</span>
+                            <span class="text-xl font-black italic text-orange-500">{{ estatisticas[0].turnovers
+                                }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="h-full flex flex-col items-center justify-center text-center opacity-30">
+                <i data-lucide="search" class="w-20 h-20 mb-4"></i>
+                <p class="text-xl font-black italic uppercase tracking-widest">Aguardando Análise de Jogador</p>
+                <p class="text-sm">Preencha o Time e o Nome para carregar as métricas.</p>
+            </div>
+            {% endif %}
+
+        </div>
+    </main>
+
+    <script>lucide.createIcons();</script>
+</body>
+
+</html>
